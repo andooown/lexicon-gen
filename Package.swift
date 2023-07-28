@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "LexiconGen",
+    name: "lexicon-gen",
     platforms: [
         .macOS(.v13),
     ],
