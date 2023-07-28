@@ -1,6 +1,7 @@
 # lexicon-gen
 
 CLI tool written in Swift to generate Swift codes from [AT Proto's Lexicon](https://atproto.com/guides/lexicon) files.
+This tool is used to generate [swift-atproto](https://github.com/andooown/swift-atproto)'s `ATProtoAPI` library.
 
 🚧 This package is under development. 🚧
 
