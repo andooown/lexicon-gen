@@ -38,7 +38,7 @@ struct LexiconGen: ParsableCommand {
 
         let source = SourceFile {
             ImportDecl("import Foundation")
-            ImportDecl("import SwiftATProtoXRPC")
+            ImportDecl("import ATProtoXRPC")
 
             // Namespace enums
             for def in namespaces {
