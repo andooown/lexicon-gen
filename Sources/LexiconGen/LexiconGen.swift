@@ -38,7 +38,7 @@ struct LexiconGen: ParsableCommand {
 
         let source = SourceFile {
             ImportDecl("import Foundation")
-            ImportDecl("import SwiftATProtoXRPC")
+            ImportDecl("import ATProtoXRPC")
 
             // Namespace enums
             for def in namespaces {
@@ -364,6 +364,9 @@ private extension LexiconGen {
 
         case .integer:
             return "Int"
+
+        case .string(format: "at-uri"):
+            return "URL"
 
         case .string(format: "datetime"):
             return "Date"
