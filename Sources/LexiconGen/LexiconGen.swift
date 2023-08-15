@@ -365,6 +365,9 @@ private extension LexiconGen {
         case .integer:
             return "Int"
 
+        case .string(format: "at-uri"):
+            return "URL"
+
         case .string(format: "datetime"):
             return "Date"
 
