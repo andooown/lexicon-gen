@@ -214,7 +214,7 @@ struct LexiconGen: ParsableCommand {
         var generated = ""
         syntax.write(to: &generated)
 
-        let outputFileURL = URL(filePath: outputFile)
+        let outputFileURL = URL(fileURLWithPath: outputFile)
         try generated.write(to: outputFileURL, atomically: true, encoding: .utf8)
     }
 }
