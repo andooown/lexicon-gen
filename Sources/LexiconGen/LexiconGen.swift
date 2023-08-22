@@ -16,7 +16,7 @@ struct LexiconGen: ParsableCommand {
         print("Source Directory = \(sourceDirectory)")
         print("Output File = \(outputFile)")
 
-        let fileURLs = listJSONFiles(in: URL(filePath: sourceDirectory))
+        let fileURLs = listJSONFiles(in: URL(fileURLWithPath: sourceDirectory, isDirectory: true))
 
         print("\(fileURLs.count) files found")
 
