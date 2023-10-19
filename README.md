@@ -5,6 +5,9 @@ This tool is used to generate [swift-atproto](https://github.com/andooown/swift-
 
 🚧 This package is under development. 🚧
 
+## Requirements
+- Swift 5.9 or later
+
 ## Installation
 TBW
 
