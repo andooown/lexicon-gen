@@ -1,7 +1,6 @@
 import ArgumentParser
 import Foundation
 import LexiconGenKit
-import SwiftFormat
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
@@ -36,30 +35,30 @@ struct LexiconGen: ParsableCommand {
         print("\(namespaces.count) namespaces found")
         print("\(defs.count) definitions found")
 
-        let source = SourceFile {
-            ImportDecl("import Foundation")
-            ImportDecl("import ATProtoCore")
-            ImportDecl("import ATProtoXRPC")
+        let source = try SourceFileSyntax {
+            try ImportDeclSyntax("import Foundation")
+            try ImportDeclSyntax("import ATProtoCore")
+            try ImportDeclSyntax("import ATProtoXRPC")
 
             // Namespace enums
             for def in namespaces {
                 if def.parent.isEmpty {
-                    EnumDecl("public enum \(def.name)") {}
+                    try EnumDeclSyntax("public enum \(raw: def.name)") {}
                 } else {
-                    ExtensionDecl("public extension \(def.parent)") {
-                        EnumDecl("enum \(def.name)") {}
+                    try ExtensionDeclSyntax("public extension \(raw: def.parent)") {
+                        try EnumDeclSyntax("enum \(raw: def.name)") {}
                     }
                 }
             }
 
             // Union for unknown schema
-            TypealiasDecl(
+            try TypeAliasDeclSyntax(
                 "public typealias LexiconUnknownUnion = Union\(raw: records.count)<\(raw: records.map(\.fullName).joined(separator: ", "))>"
             )
-            ExtensionDecl("extension LexiconUnknownUnion") {
+            try ExtensionDeclSyntax("extension LexiconUnknownUnion") {
                 let uniqued = Builder.uniqued(records.map(\.fullName))
                 for (i, (record, unique)) in zip(records, uniqued).enumerated() {
-                    VariableDecl(
+                    try VariableDeclSyntax(
                         """
                         public var as\(raw: unique): \(raw: record.fullName)? {
                             asType\(raw: i)
@@ -71,56 +70,56 @@ struct LexiconGen: ParsableCommand {
 
             // Definitions
             for def in defs {
-                ExtensionDecl(
-                    modifiers: ModifierList([DeclModifierSyntax(name: .public)]),
-                    extendedType: Type(stringLiteral: def.parent),
-                    membersBuilder: {
+                try ExtensionDeclSyntax(
+                    modifiers: [DeclModifierSyntax(name: .keyword(.public))],
+                    extendedType: TypeSyntax(stringLiteral: def.parent),
+                    memberBlockBuilder: {
                         switch def.object {
                         case .boolean:
-                            TypealiasDecl("typealias \(raw: def.name) = Bool")
+                            try TypeAliasDeclSyntax("typealias \(raw: def.name) = Bool")
 
                         case .integer:
-                            TypealiasDecl("typealias \(raw: def.name) = Int")
+                            try TypeAliasDeclSyntax("typealias \(raw: def.name) = Int")
 
                         case .string:
-                            TypealiasDecl("typealias \(raw: def.name) = String")
+                            try TypeAliasDeclSyntax("typealias \(raw: def.name) = String")
 
                         case .array:
                             if let type = variableType(scheme: def.object) {
-                                TypealiasDecl("typealias \(raw: def.name) = \(raw: type)")
+                                try TypeAliasDeclSyntax("typealias \(raw: def.name) = \(raw: type)")
                             }
 
                         case .object(let object):
-                            objectDecl(
+                            try objectDecl(
                                 name: def.name,
                                 inheritances: ["UnionCodable", "Hashable"],
                                 object
                             ) {
-                                VariableDecl(
+                                try VariableDeclSyntax(
                                     "public static let typeValue = \"\(raw: def.id.valueWithoutMain)\""
                                 )
                             }
 
                         case .union:
                             if let type = variableType(scheme: def.object) {
-                                TypealiasDecl("typealias \(raw: def.name) = \(raw: type)")
+                                try TypeAliasDeclSyntax("typealias \(raw: def.name) = \(raw: type)")
                             }
 
                         case .record(let object):
-                            objectDecl(
+                            try objectDecl(
                                 name: def.name,
                                 inheritances: ["UnionCodable", "Hashable"],
                                 object
                             ) {
-                                VariableDecl(
+                                try VariableDeclSyntax(
                                     "public static let typeValue = \"\(raw: def.id.valueWithoutMain)\""
                                 )
                             }
 
                         case .query(let method), .procedure(let method):
-                            StructDecl("struct \(def.name): XRPCRequest") {
+                            try StructDeclSyntax("struct \(raw: def.name): XRPCRequest") {
                                 if let parameters = method.parameters {
-                                    objectDecl(
+                                    try objectDecl(
                                         name: "Parameters",
                                         inheritances: ["XRPCRequestParametersConvertible"],
                                         parameters
@@ -136,7 +135,7 @@ struct LexiconGen: ParsableCommand {
                                                     "parameters.append(contentsOf: \(k).toQueryItems(name: \"\(k)\"))"
                                             }
 
-                                        VariableDecl(
+                                        try VariableDeclSyntax(
                                             """
                                             public var queryItems: [URLQueryItem] {
                                                 var parameters = [URLQueryItem]()
@@ -151,7 +150,7 @@ struct LexiconGen: ParsableCommand {
 
                                 switch method.input {
                                 case .object(let object):
-                                    objectDecl(name: "Input", inheritances: ["Encodable"], object)
+                                    try objectDecl(name: "Input", inheritances: ["Encodable"], object)
 
                                 default:
                                     emptyDecl()
@@ -159,7 +158,7 @@ struct LexiconGen: ParsableCommand {
 
                                 switch method.output {
                                 case .object(let object):
-                                    objectDecl(
+                                    try objectDecl(
                                         name: "Output",
                                         inheritances: ["Decodable", "Hashable"],
                                         object
@@ -167,7 +166,7 @@ struct LexiconGen: ParsableCommand {
 
                                 case .ref(let ref):
                                     if let type = variableType(scheme: .ref(ref)) {
-                                        TypealiasDecl("public typealias Output = \(raw: type)")
+                                        try TypeAliasDeclSyntax("public typealias Output = \(raw: type)")
                                     }
 
                                 default:
@@ -180,28 +179,28 @@ struct LexiconGen: ParsableCommand {
                                 )
 
                                 let requestType = def.object.isQuery ? "query" : "procedure"
-                                VariableDecl(
+                                try VariableDeclSyntax(
                                     "public let type = XRPCRequestType.\(raw: requestType)"
                                 )
 
-                                VariableDecl(
+                                try VariableDeclSyntax(
                                     "public let requestIdentifier = \"\(raw: def.id.nsid)\""
                                 )
 
                                 if method.parameters != nil {
-                                    VariableDecl(
+                                    try VariableDeclSyntax(
                                         "public let parameters: Parameters"
                                     )
                                 }
                                 if method.input != nil {
-                                    VariableDecl(
+                                    try VariableDeclSyntax(
                                         "public let input: Input?"
                                     )
                                 }
                             }
 
                         case .subscription:
-                            EnumDecl("enum \(def.name)") {}
+                            try EnumDeclSyntax("enum \(raw: def.name)") {}
 
                         default:
                             emptyDecl()
@@ -227,34 +226,34 @@ private extension LexiconGen {
     ///     public let optionalVar: U?
     /// }
     /// ```
-    @MemberDeclListBuilder
+    @MemberBlockItemListBuilder
     func objectDecl(
         name: String,
         inheritances: [String] = [],
         _ object: LexiconObjectSchema<LexiconAbsoluteReference>,
-        @MemberDeclListBuilder additionalBody: () -> MemberDeclList = { MemberDeclList([]) }
-    ) -> MemberDeclList {
+        @MemberBlockItemListBuilder additionalBody: () throws -> MemberBlockItemListSyntax = { MemberBlockItemListSyntax([]) }
+    ) throws -> MemberBlockItemListSyntax {
         let inherit = inheritances.isEmpty ? "" : ": " + inheritances.joined(separator: ", ")
-        StructDecl("public struct \(name)\(inherit)") {
-            propertiesDecls(object.properties, required: object.required)
+        try StructDeclSyntax("public struct \(raw: name)\(raw: inherit)") {
+            try propertiesDecls(object.properties, required: object.required)
             propertiesInitializerDecl(object.properties, required: object.required)
 
-            additionalBody()
+            try additionalBody()
         }
     }
 
     func propertiesDecls(
         _ properties: [String: LexiconSchema<LexiconAbsoluteReference>],
         required: [String]? = nil
-    ) -> MemberDeclList {
-        propertieDecls(Array(properties), required: required)
+    ) throws -> MemberBlockItemListSyntax {
+        try propertieDecls(Array(properties), required: required)
     }
 
-    @MemberDeclListBuilder
+    @MemberBlockItemListBuilder
     func propertieDecls(
         _ properties: [(String, LexiconSchema<LexiconAbsoluteReference>)],
         required: [String]? = nil
-    ) -> MemberDeclList {
+    ) throws -> MemberBlockItemListSyntax {
         let required = required ?? []
         let properties = properties.sorted { $0.0 < $1.0 }
 
@@ -262,7 +261,7 @@ private extension LexiconGen {
             if let type = variableType(scheme: v) {
                 let t = required.contains(k) ? type : "Optional<\(type)>"
 
-                VariableDecl(
+                try VariableDeclSyntax(
                     """
                     @Indirect
                     public var \(raw: k): \(raw: t)
@@ -275,14 +274,14 @@ private extension LexiconGen {
     func propertiesInitializerDecl(
         _ properties: [String: LexiconSchema<LexiconAbsoluteReference>],
         required: [String]? = nil
-    ) -> InitializerDecl {
+    ) -> DeclSyntax {
         propertiesInitializerDecl(Array(properties), required: required)
     }
 
     func propertiesInitializerDecl(
         _ properties: [(String, LexiconSchema<LexiconAbsoluteReference>)],
         required: [String]? = nil
-    ) -> InitializerDecl {
+    ) -> DeclSyntax {
         var signatures = [String]()
         var assignments = [String]()
 
@@ -297,7 +296,7 @@ private extension LexiconGen {
             }
         }
 
-        return InitializerDecl(
+        return DeclSyntax(
             """
             public init(
                 \(raw: signatures.joined(separator: ",\n"))
@@ -311,7 +310,7 @@ private extension LexiconGen {
     func requestInitializerDecl(
         parameters: LexiconObjectSchema<LexiconAbsoluteReference>?,
         input: LexiconSchema<LexiconAbsoluteReference>?
-    ) -> InitializerDecl {
+    ) -> DeclSyntax {
         var signatures = [String]()
         var assignments = [String]()
 
@@ -325,7 +324,7 @@ private extension LexiconGen {
             assignments.append("self.input = input")
         }
 
-        return InitializerDecl(
+        return DeclSyntax(
             """
             public init(
                 \(raw: signatures.joined(separator: ",\n"))
@@ -336,8 +335,8 @@ private extension LexiconGen {
         )
     }
 
-    func emptyDecl() -> MemberDeclList {
-        MemberDeclList([])
+    func emptyDecl() -> MemberBlockItemListSyntax {
+        MemberBlockItemListSyntax(stringLiteral: "")
     }
 
     func listJSONFiles(in baseDirectory: URL) -> [URL] {
