@@ -36,9 +36,10 @@ struct LexiconGen: ParsableCommand {
         print("\(defs.count) definitions found")
 
         let source = try SourceFileSyntax {
-            try ImportDeclSyntax("import Foundation")
             try ImportDeclSyntax("import ATProtoCore")
+            try ImportDeclSyntax("import ATProtoMacro")
             try ImportDeclSyntax("import ATProtoXRPC")
+            try ImportDeclSyntax("import Foundation")
 
             // Namespace enums
             for def in namespaces {
@@ -96,7 +97,7 @@ struct LexiconGen: ParsableCommand {
                                 object
                             ) {
                                 try VariableDeclSyntax(
-                                    "public static let typeValue = \"\(raw: def.id.valueWithoutMain)\""
+                                    "public static let typeValue = #LexiconDefID(\"\(raw: def.id.valueWithoutMain)\")"
                                 )
                             }
 
@@ -112,7 +113,7 @@ struct LexiconGen: ParsableCommand {
                                 object
                             ) {
                                 try VariableDeclSyntax(
-                                    "public static let typeValue = \"\(raw: def.id.valueWithoutMain)\""
+                                    "public static let typeValue = #LexiconDefID(\"\(raw: def.id.valueWithoutMain)\")"
                                 )
                             }
 
