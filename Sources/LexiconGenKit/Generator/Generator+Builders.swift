@@ -61,7 +61,8 @@ public extension Generator {
                 try TypeAliasDeclSyntax("typealias \(raw: definition.name) = \(raw: typeName)")
             }
 
-        case .object(let object):
+        case .object(let object),
+            .record(let object):
             try Generator.objectSyntax(
                 name: definition.name,
                 inheritances: ["UnionCodable", "Hashable"],

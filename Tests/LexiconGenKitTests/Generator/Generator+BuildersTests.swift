@@ -199,6 +199,39 @@ final class GeneratorBuildersTests: XCTestCase {
             }
             """
         )
+
+        // record
+        XCTAssertNoDifference(
+            try Generator.definition(
+                makeDefinition(
+                    .record(
+                        LexiconObjectSchema(
+                            properties: [
+                                "requiredValue": .integer,
+                                "optionalValue": .string(format: nil)
+                            ],
+                            required: ["requiredValue"]
+                        )
+                    )
+                )
+            ).formatted().description,
+            """
+            public struct Foo: UnionCodable, Hashable {
+                @Indirect
+                public var optionalValue: String?
+                @Indirect
+                public var requiredValue: Int
+                public init(
+                    optionalValue: String? = nil,
+                    requiredValue: Int
+                ) {
+                    self._optionalValue = .wrapped(optionalValue)
+                    self._requiredValue = .wrapped(requiredValue)
+                }
+                public static let typeValue = #LexiconDefID("com.example.foo")
+            }
+            """
+        )
     }
 
     func testObjectSyntax() throws {
