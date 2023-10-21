@@ -30,7 +30,7 @@ let package = Package(
             name: "LexiconGenKit"
         ),
         .testTarget(
-            name: "LexiconGenTests",
+            name: "LexiconGenKitTests",
             dependencies: [
                 .target(name: "LexiconGenKit")
             ]
