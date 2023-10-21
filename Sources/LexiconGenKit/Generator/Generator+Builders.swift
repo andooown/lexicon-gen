@@ -54,51 +54,13 @@ public extension Generator {
 
         case .boolean,
             .integer,
-            .string:
+            .string,
+            .array:
             if let typeName = Generator.swiftTypeName(for: definition.object) {
                 try TypeAliasDeclSyntax("typealias \(raw: definition.name) = \(raw: typeName)")
             }
 
-        case .bytes:
-            Generator.emptySyntax()
-
-        case .cidLink:
-            Generator.emptySyntax()
-
-        case .blob:
-            Generator.emptySyntax()
-
-        case .array:
-            Generator.emptySyntax()
-
-        case .object:
-            Generator.emptySyntax()
-
-        case .params:
-            Generator.emptySyntax()
-
-        case .token:
-            Generator.emptySyntax()
-
-        case .ref:
-            Generator.emptySyntax()
-
-        case .union:
-            Generator.emptySyntax()
-
-        case .unknown:
-            Generator.emptySyntax()
-
-        case .record:
-            Generator.emptySyntax()
-
-        case .query:
-            Generator.emptySyntax()
-
-        case .procedure:
-            Generator.emptySyntax()
-
-        case .subscription:
+        default:
             Generator.emptySyntax()
         }
     }

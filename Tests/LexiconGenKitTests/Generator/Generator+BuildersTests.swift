@@ -133,5 +133,19 @@ final class GeneratorBuildersTests: XCTestCase {
             typealias Foo = SafeURL
             """
         )
+
+        // array
+        XCTAssertNoDifference(
+            try Generator.definition(makeDefinition(.array(.boolean))).formatted().description,
+            """
+            typealias Foo = [Bool]
+            """
+        )
+        XCTAssertNoDifference(
+            try Generator.definition(makeDefinition(.array(.integer))).formatted().description,
+            """
+            typealias Foo = [Int]
+            """
+        )
     }
 }
