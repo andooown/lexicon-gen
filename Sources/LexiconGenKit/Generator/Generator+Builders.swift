@@ -94,16 +94,24 @@ public extension Generator {
                                 return "parameters.append(contentsOf: \(k).toQueryItems(name: \"\(k)\"))"
                             }
 
-                        try VariableDeclSyntax(
-                            """
-                            public var queryItems: [URLQueryItem] {
-                                var parameters = [URLQueryItem]()
-                                \(raw: params.joined(separator: "\n"))
+                        if params.isEmpty {
+                            try VariableDeclSyntax(
+                                """
+                                public let queryItems: [URLQueryItem] = []
+                                """
+                            )
+                        } else {
+                            try VariableDeclSyntax(
+                                """
+                                public var queryItems: [URLQueryItem] {
+                                    var parameters = [URLQueryItem]()
+                                    \(raw: params.joined(separator: "\n"))
 
-                                return parameters
-                            }
-                            """
-                        )
+                                    return parameters
+                                }
+                                """
+                            )
+                        }
                     }
                 }
 
