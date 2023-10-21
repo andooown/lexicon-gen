@@ -150,6 +150,23 @@ final class GeneratorBuildersTests: XCTestCase {
             """
         )
 
+        // union
+        XCTAssertNoDifference(
+            try Generator.definition(
+                makeDefinition(
+                    .union(
+                        [
+                            LexiconAbsoluteReference(LexiconDefinitionID("com.example.foo#main")),
+                            LexiconAbsoluteReference(LexiconDefinitionID("com.example.foo#record")),
+                        ]
+                    )
+                )
+            ).formatted().description,
+            """
+            typealias Foo = Union2<Com.Example.Foo, Com.Example.Foo.Record>
+            """
+        )
+
         // object
         XCTAssertNoDifference(
             try Generator.definition(

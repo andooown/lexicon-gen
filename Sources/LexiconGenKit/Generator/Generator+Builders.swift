@@ -55,7 +55,8 @@ public extension Generator {
         case .boolean,
             .integer,
             .string,
-            .array:
+            .array,
+            .union:
             if let typeName = Generator.swiftTypeName(for: definition.object) {
                 try TypeAliasDeclSyntax("typealias \(raw: definition.name) = \(raw: typeName)")
             }
