@@ -45,4 +45,27 @@ public extension Generator {
             }
         }
     }
+
+    @MemberBlockItemListBuilder
+    static func definition(_ definition: SwiftDefinition<LexiconSchema<LexiconAbsoluteReference>>) throws -> MemberBlockItemListSyntax {
+        switch definition.object {
+        case .boolean:
+            try TypeAliasDeclSyntax("typealias \(raw: definition.name) = Bool")
+
+        case .integer:
+            try TypeAliasDeclSyntax("typealias \(raw: definition.name) = Int")
+
+        case .string:
+            try TypeAliasDeclSyntax("typealias \(raw: definition.name) = String")
+
+        default:
+            Generator.emptySyntax()
+        }
+    }
+}
+
+private extension Generator {
+    static func emptySyntax() -> MemberBlockItemListSyntax {
+        MemberBlockItemListSyntax(stringLiteral: "")
+    }
 }

@@ -4,6 +4,8 @@ import XCTest
 @testable import LexiconGenKit
 
 final class GeneratorBuildersTests: XCTestCase {
+    private typealias AbsoluteSwiftDefinition = SwiftDefinition<LexiconSchema<LexiconAbsoluteReference>>
+
     func testNamespaces() throws {
         XCTAssertNoDifference(
             try Generator.namespaces([
@@ -45,7 +47,7 @@ final class GeneratorBuildersTests: XCTestCase {
 
         XCTAssertNoDifference(
             try Generator.unknownUnion(from: [
-                SwiftDefinition(id: LexiconDefinitionID("com.example.foo#a"), parent: "Com.Example.Foo", name: "A", object: .record(object)),
+                AbsoluteSwiftDefinition(id: LexiconDefinitionID("com.example.foo#a"), parent: "Com.Example.Foo", name: "A", object: .record(object)),
             ]).formatted().description,
             """
             public typealias LexiconUnknownUnion = Union1<Com.Example.Foo.A>
@@ -58,10 +60,10 @@ final class GeneratorBuildersTests: XCTestCase {
         )
         XCTAssertNoDifference(
             try Generator.unknownUnion(from: [
-                SwiftDefinition(id: LexiconDefinitionID("com.example.foo#a"), parent: "Com.Example.Foo", name: "A", object: .record(object)),
-                SwiftDefinition(id: LexiconDefinitionID("com.example.foo#b"), parent: "Com.Example.Foo", name: "B", object: .record(object)),
-                SwiftDefinition(id: LexiconDefinitionID("com.example.Bar#b"), parent: "Com.Example.Bar", name: "B", object: .record(object)),
-                SwiftDefinition(id: LexiconDefinitionID("com.example.Baz#c"), parent: "Com.Example.Baz", name: "C", object: .boolean),
+                AbsoluteSwiftDefinition(id: LexiconDefinitionID("com.example.foo#a"), parent: "Com.Example.Foo", name: "A", object: .record(object)),
+                AbsoluteSwiftDefinition(id: LexiconDefinitionID("com.example.foo#b"), parent: "Com.Example.Foo", name: "B", object: .record(object)),
+                AbsoluteSwiftDefinition(id: LexiconDefinitionID("com.example.Bar#b"), parent: "Com.Example.Bar", name: "B", object: .record(object)),
+                AbsoluteSwiftDefinition(id: LexiconDefinitionID("com.example.Baz#c"), parent: "Com.Example.Baz", name: "C", object: .boolean),
             ]).formatted().description,
             """
             public typealias LexiconUnknownUnion = Union3<Com.Example.Foo.A, Com.Example.Foo.B, Com.Example.Bar.B>
@@ -76,6 +78,35 @@ final class GeneratorBuildersTests: XCTestCase {
                     asType2
                 }
             }
+            """
+        )
+    }
+
+    func testDefinition() throws {
+        // boolean
+        let boolean = try AbsoluteSwiftDefinition(id: LexiconDefinitionID("com.example.foo#main"), parent: "Com.Example", name: "Foo", object: .boolean)
+        XCTAssertNoDifference(
+            try Generator.definition(boolean).formatted().description,
+            """
+            typealias Foo = Bool
+            """
+        )
+
+        // integer
+        let integer = try AbsoluteSwiftDefinition(id: LexiconDefinitionID("com.example.foo#main"), parent: "Com.Example", name: "Foo", object: .integer)
+        XCTAssertNoDifference(
+            try Generator.definition(integer).formatted().description,
+            """
+            typealias Foo = Int
+            """
+        )
+
+        // string
+        let string = try AbsoluteSwiftDefinition(id: LexiconDefinitionID("com.example.foo#main"), parent: "Com.Example", name: "Foo", object: .string(format: nil))
+        XCTAssertNoDifference(
+            try Generator.definition(string).formatted().description,
+            """
+            typealias Foo = String
             """
         )
     }

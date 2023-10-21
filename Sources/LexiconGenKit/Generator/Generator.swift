@@ -21,6 +21,15 @@ public struct Generator {
             try Generator.namespaces(namespaces)
 
             try Generator.unknownUnion(from: definitions)
+
+            for definition in definitions {
+                try ExtensionDeclSyntax(
+                    modifiers: [DeclModifierSyntax(name: .keyword(.public))],
+                    extendedType: TypeSyntax(stringLiteral: definition.parent)
+                ) {
+                    try Generator.definition(definition)
+                }
+            }
         }
 
         let syntax = source.formatted()
