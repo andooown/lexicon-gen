@@ -9,7 +9,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-13]
         swift-version: ["5.9"]
     steps:
       - uses: swift-actions/setup-swift@v1
@@ -24,9 +24,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # masos-latest is disabled due to unknown error
-        # i.e. https://github.com/andooown/lexicon-gen/actions/runs/5938947489/job/16104384865?pr=2
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, macos-13]
         swift-version: ["5.9"]
     steps:
       - uses: swift-actions/setup-swift@v1
