@@ -107,6 +107,85 @@ public extension Generator {
 }
 
 private extension Generator {
+    static func swiftTypeName(for scheme: LexiconSchema<LexiconAbsoluteReference>) -> String? {
+        switch scheme {
+        case .null:
+            return nil
+
+        case .boolean:
+            return "Bool"
+
+        case .integer:
+            return "Int"
+
+        case .string(format: "at-uri"):
+            return "ATURI"
+
+        case .string(format: "datetime"):
+            return "Date"
+
+        case .string(format: "uri"):
+            return "SafeURL"
+
+        case .string:
+            return "String"
+
+        case .bytes:
+            return nil
+
+        case .cidLink:
+            return nil
+
+        case .blob:
+            return nil
+
+        case .array(let element):
+            return swiftTypeName(for: element).map { "[" + $0 + "]" }
+
+        case .object:
+            return nil
+
+        case .params:
+            return nil
+
+        case .token:
+            return nil
+
+        case .ref(let ref):
+            if ref.rawValue.contains("#") {
+                let (parent, name) = ref.definitionID.swiftDefinitionNames
+                return parent + "." + name
+            } else {
+                return ref.rawValue.split(separator: ".").map(String.init).map(\.headUppercased)
+                    .joined(
+                        separator: "."
+                    )
+            }
+
+        case .union(let refs):
+            let types = refs.compactMap { swiftTypeName(for: .ref($0)) }
+            guard !types.isEmpty else {
+                return nil
+            }
+            return "Union\(types.count)<\(types.joined(separator: ", "))>"
+
+        case .unknown:
+            return "LexiconUnknownUnion"
+
+        case .record:
+            return nil
+
+        case .query:
+            return nil
+
+        case .procedure:
+            return nil
+
+        case .subscription:
+            return nil
+        }
+    }
+
     static func emptySyntax() -> MemberBlockItemListSyntax {
         MemberBlockItemListSyntax(stringLiteral: "")
     }
