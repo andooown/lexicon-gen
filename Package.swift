@@ -24,11 +24,13 @@ let package = Package(
             dependencies: [
                 .target(name: "LexiconGenKit"),
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
-                .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
             ]
         ),
         .target(
-            name: "LexiconGenKit"
+            name: "LexiconGenKit",
+            dependencies: [
+                .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
+            ]
         ),
         .testTarget(
             name: "LexiconGenKitTests",
