@@ -183,7 +183,7 @@ final class GeneratorBuildersTests: XCTestCase {
                 )
             ).formatted().description,
             """
-            public struct Foo: UnionCodable, Hashable {
+            struct Foo: UnionCodable, Hashable {
                 @Indirect
                 public var optionalValue: String?
                 @Indirect
@@ -216,7 +216,7 @@ final class GeneratorBuildersTests: XCTestCase {
                 )
             ).formatted().description,
             """
-            public struct Foo: UnionCodable, Hashable {
+            struct Foo: UnionCodable, Hashable {
                 @Indirect
                 public var optionalValue: String?
                 @Indirect
@@ -234,6 +234,46 @@ final class GeneratorBuildersTests: XCTestCase {
         )
 
         // query
+        XCTAssertNoDifference(
+            try Generator.definition(
+                makeDefinition(
+                    .query(
+                        LexiconMethodSchema(
+                            parameters: LexiconObjectSchema(properties: [:], required: nil),
+                            input: nil,
+                            output: .object(LexiconObjectSchema(properties: [:], required: nil))
+                        )
+                    )
+                )
+            ).formatted().description,
+            """
+            struct Foo: XRPCRequest {
+                public struct Parameters: XRPCRequestParametersConvertible {
+                    public init(
+
+                    ) {
+
+                    }
+                    public let queryItems: [URLQueryItem] = []
+                }
+                public struct Output: Decodable, Hashable {
+                    public init(
+
+                    ) {
+
+                    }
+                }
+                public init(
+                    parameters: Parameters
+                ) {
+                    self.parameters = parameters
+                }
+                public let type = XRPCRequestType.query
+                public let requestIdentifier = "com.example.foo"
+                public let parameters: Parameters
+            }
+            """
+        )
         XCTAssertNoDifference(
             try Generator.definition(
                 makeDefinition(
@@ -408,7 +448,7 @@ final class GeneratorBuildersTests: XCTestCase {
                 }
             ).formatted().description,
             """
-            public struct Object: Protocol1, Protocol2 {
+            struct Object: Protocol1, Protocol2 {
                 @Indirect
                 public var bar: Int?
                 @Indirect
