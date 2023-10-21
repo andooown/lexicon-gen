@@ -1,4 +1,6 @@
 import CustomDump
+import SwiftSyntax
+import SwiftSyntaxBuilder
 import XCTest
 
 @testable import LexiconGenKit
@@ -145,6 +147,46 @@ final class GeneratorBuildersTests: XCTestCase {
             try Generator.definition(makeDefinition(.array(.integer))).formatted().description,
             """
             typealias Foo = [Int]
+            """
+        )
+    }
+
+    func testObjectSyntax() throws {
+        XCTAssertNoDifference(
+            try Generator.objectSyntax(
+                name: "Object",
+                inheritances: [
+                    "Protocol1",
+                    "Protocol2"
+                ],
+                LexiconObjectSchema(
+                    properties: [
+                        "foo": .boolean,
+                        "bar": .integer,
+                    ],
+                    required: [
+                        "foo"
+                    ]
+                ),
+                additionalBody: {
+                    try VariableDeclSyntax("public let baz = 123")
+                }
+            ).formatted().description,
+            """
+            public struct Object: Protocol1, Protocol2 {
+                @Indirect
+                public var bar: Int?
+                @Indirect
+                public var foo: Bool
+                public init(
+                    bar: Int? = nil,
+                    foo: Bool
+                ) {
+                    self._bar = .wrapped(bar)
+                    self._foo = .wrapped(foo)
+                }
+                public let baz = 123
+            }
             """
         )
     }

@@ -64,6 +64,23 @@ public extension Generator {
             Generator.emptySyntax()
         }
     }
+
+    @MemberBlockItemListBuilder
+    static func objectSyntax(
+        name: String,
+        inheritances: [String] = [],
+        _ object: LexiconObjectSchema<LexiconAbsoluteReference>,
+        @MemberBlockItemListBuilder additionalBody: () throws -> MemberBlockItemListSyntax = { MemberBlockItemListSyntax([]) }
+    ) throws -> MemberBlockItemListSyntax {
+        let inherit = inheritances.isEmpty ? "" : ": " + inheritances.joined(separator: ", ")
+
+        try StructDeclSyntax("public struct \(raw: name)\(raw: inherit)") {
+            try Generator.objectPropertiesSyntax(object.properties, required: object.required)
+            Generator.objectInitializerSyntax(object.properties, required: object.required)
+
+            try additionalBody()
+        }
+    }
 }
 
 private extension Generator {
@@ -144,6 +161,57 @@ private extension Generator {
         case .subscription:
             return nil
         }
+    }
+
+    @MemberBlockItemListBuilder
+    static func objectPropertiesSyntax(
+        _ properties: [String: LexiconSchema<LexiconAbsoluteReference>],
+        required: [String]? = nil
+    ) throws -> MemberBlockItemListSyntax {
+        let required = required ?? []
+        let properties = properties.sorted { $0.0 < $1.0 }
+
+        for (k, v) in properties {
+            if let type = swiftTypeName(for: v) {
+                let t = required.contains(k) ? type : "\(type)?"
+
+                try VariableDeclSyntax(
+                    """
+                    @Indirect
+                    public var \(raw: k): \(raw: t)
+                    """
+                )
+            }
+        }
+    }
+
+    static func objectInitializerSyntax(
+        _ properties: [String: LexiconSchema<LexiconAbsoluteReference>],
+        required: [String]? = nil
+    ) -> DeclSyntax {
+        var signatures = [String]()
+        var assignments = [String]()
+
+        let required = required ?? []
+        for (k, v) in properties.sorted(by: { $0.0 < $1.0 }) {
+            if let type = swiftTypeName(for: v) {
+                let isRequired = required.contains(k)
+                let t = isRequired ? type : "\(type)?"
+
+                signatures.append("\(k): \(t)\(isRequired ? "" : " = nil")")
+                assignments.append("self._\(k) = .wrapped(\(k))")
+            }
+        }
+
+        return DeclSyntax(
+            """
+            public init(
+                \(raw: signatures.joined(separator: ",\n"))
+            ) {
+                \(raw: assignments.joined(separator: "\n"))
+            }
+            """
+        )
     }
 
     static func emptySyntax() -> MemberBlockItemListSyntax {
