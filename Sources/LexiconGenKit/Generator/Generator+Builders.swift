@@ -52,14 +52,12 @@ public extension Generator {
         case .null:
             Generator.emptySyntax()
 
-        case .boolean:
-            try TypeAliasDeclSyntax("typealias \(raw: definition.name) = Bool")
-
-        case .integer:
-            try TypeAliasDeclSyntax("typealias \(raw: definition.name) = Int")
-
-        case .string:
-            try TypeAliasDeclSyntax("typealias \(raw: definition.name) = String")
+        case .boolean,
+            .integer,
+            .string:
+            if let typeName = Generator.swiftTypeName(for: definition.object) {
+                try TypeAliasDeclSyntax("typealias \(raw: definition.name) = \(raw: typeName)")
+            }
 
         case .bytes:
             Generator.emptySyntax()

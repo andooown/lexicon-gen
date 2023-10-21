@@ -83,30 +83,54 @@ final class GeneratorBuildersTests: XCTestCase {
     }
 
     func testDefinition() throws {
+        func makeDefinition(_ object: LexiconSchema<LexiconAbsoluteReference>) throws -> AbsoluteSwiftDefinition {
+            try AbsoluteSwiftDefinition(
+                id: LexiconDefinitionID("com.example.foo#main"),
+                parent: "Com.Example",
+                name: "Foo",
+                object: object
+            )
+        }
+
         // boolean
-        let boolean = try AbsoluteSwiftDefinition(id: LexiconDefinitionID("com.example.foo#main"), parent: "Com.Example", name: "Foo", object: .boolean)
         XCTAssertNoDifference(
-            try Generator.definition(boolean).formatted().description,
+            try Generator.definition(makeDefinition(.boolean)).formatted().description,
             """
             typealias Foo = Bool
             """
         )
 
         // integer
-        let integer = try AbsoluteSwiftDefinition(id: LexiconDefinitionID("com.example.foo#main"), parent: "Com.Example", name: "Foo", object: .integer)
         XCTAssertNoDifference(
-            try Generator.definition(integer).formatted().description,
+            try Generator.definition(makeDefinition(.integer)).formatted().description,
             """
             typealias Foo = Int
             """
         )
 
         // string
-        let string = try AbsoluteSwiftDefinition(id: LexiconDefinitionID("com.example.foo#main"), parent: "Com.Example", name: "Foo", object: .string(format: nil))
         XCTAssertNoDifference(
-            try Generator.definition(string).formatted().description,
+            try Generator.definition(makeDefinition(.string(format: nil))).formatted().description,
             """
             typealias Foo = String
+            """
+        )
+        XCTAssertNoDifference(
+            try Generator.definition(makeDefinition(.string(format: "at-uri"))).formatted().description,
+            """
+            typealias Foo = ATURI
+            """
+        )
+        XCTAssertNoDifference(
+            try Generator.definition(makeDefinition(.string(format: "datetime"))).formatted().description,
+            """
+            typealias Foo = Date
+            """
+        )
+        XCTAssertNoDifference(
+            try Generator.definition(makeDefinition(.string(format: "uri"))).formatted().description,
+            """
+            typealias Foo = SafeURL
             """
         )
     }
