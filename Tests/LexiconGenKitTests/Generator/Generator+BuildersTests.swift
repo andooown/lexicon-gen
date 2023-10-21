@@ -183,7 +183,7 @@ final class GeneratorBuildersTests: XCTestCase {
                 )
             ).formatted().description,
             """
-            public struct Foo: UnionCodable, Hashable {
+            struct Foo: UnionCodable, Hashable {
                 @Indirect
                 public var optionalValue: String?
                 @Indirect
@@ -216,7 +216,7 @@ final class GeneratorBuildersTests: XCTestCase {
                 )
             ).formatted().description,
             """
-            public struct Foo: UnionCodable, Hashable {
+            struct Foo: UnionCodable, Hashable {
                 @Indirect
                 public var optionalValue: String?
                 @Indirect
@@ -408,7 +408,7 @@ final class GeneratorBuildersTests: XCTestCase {
                 }
             ).formatted().description,
             """
-            public struct Object: Protocol1, Protocol2 {
+            struct Object: Protocol1, Protocol2 {
                 @Indirect
                 public var bar: Int?
                 @Indirect

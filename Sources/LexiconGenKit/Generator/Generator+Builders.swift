@@ -80,6 +80,7 @@ public extension Generator {
                 if let parameters = method.parameters {
                     try objectSyntax(
                         name: "Parameters",
+                        modifiers: ["public"],
                         inheritances: ["XRPCRequestParametersConvertible"],
                         object: parameters
                     ) {
@@ -111,6 +112,7 @@ public extension Generator {
                 case .object(let object):
                     try objectSyntax(
                         name: "Input",
+                        modifiers: ["public"],
                         inheritances: ["Encodable"],
                         object: object
                     )
@@ -124,6 +126,7 @@ public extension Generator {
                 case .object(let object):
                     try objectSyntax(
                         name: "Output",
+                        modifiers: ["public"],
                         inheritances: ["Decodable", "Hashable"],
                         object: object
                     )
@@ -175,13 +178,15 @@ public extension Generator {
     @MemberBlockItemListBuilder
     static func objectSyntax(
         name: String,
+        modifiers: [String] = [],
         inheritances: [String] = [],
         object: LexiconObjectSchema<LexiconAbsoluteReference>,
         @MemberBlockItemListBuilder additionalBody: () throws -> MemberBlockItemListSyntax = { MemberBlockItemListSyntax([]) }
     ) throws -> MemberBlockItemListSyntax {
+        let modifier = modifiers.isEmpty ? "" : modifiers.joined(separator: " ") + " "
         let inherit = inheritances.isEmpty ? "" : ": " + inheritances.joined(separator: ", ")
 
-        try StructDeclSyntax("public struct \(raw: name)\(raw: inherit)") {
+        try StructDeclSyntax("\(raw: modifier)struct \(raw: name)\(raw: inherit)") {
             try Generator.objectPropertiesSyntax(object.properties, required: object.required)
             Generator.objectInitializerSyntax(object.properties, required: object.required)
 
