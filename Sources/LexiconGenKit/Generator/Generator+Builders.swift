@@ -60,6 +60,17 @@ public extension Generator {
                 try TypeAliasDeclSyntax("typealias \(raw: definition.name) = \(raw: typeName)")
             }
 
+        case .object(let object):
+            try Generator.objectSyntax(
+                name: definition.name,
+                inheritances: ["UnionCodable", "Hashable"],
+                object: object
+            ) {
+                try VariableDeclSyntax(
+                    "public static let typeValue = #LexiconDefID(\"\(raw: definition.id.valueWithoutMain)\")"
+                )
+            }
+
         default:
             Generator.emptySyntax()
         }
@@ -69,7 +80,7 @@ public extension Generator {
     static func objectSyntax(
         name: String,
         inheritances: [String] = [],
-        _ object: LexiconObjectSchema<LexiconAbsoluteReference>,
+        object: LexiconObjectSchema<LexiconAbsoluteReference>,
         @MemberBlockItemListBuilder additionalBody: () throws -> MemberBlockItemListSyntax = { MemberBlockItemListSyntax([]) }
     ) throws -> MemberBlockItemListSyntax {
         let inherit = inheritances.isEmpty ? "" : ": " + inheritances.joined(separator: ", ")

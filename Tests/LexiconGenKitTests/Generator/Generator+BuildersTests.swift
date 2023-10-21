@@ -149,6 +149,39 @@ final class GeneratorBuildersTests: XCTestCase {
             typealias Foo = [Int]
             """
         )
+
+        // object
+        XCTAssertNoDifference(
+            try Generator.definition(
+                makeDefinition(
+                    .object(
+                        LexiconObjectSchema(
+                            properties: [
+                                "requiredValue": .integer,
+                                "optionalValue": .string(format: nil)
+                            ],
+                            required: ["requiredValue"]
+                        )
+                    )
+                )
+            ).formatted().description,
+            """
+            public struct Foo: UnionCodable, Hashable {
+                @Indirect
+                public var optionalValue: String?
+                @Indirect
+                public var requiredValue: Int
+                public init(
+                    optionalValue: String? = nil,
+                    requiredValue: Int
+                ) {
+                    self._optionalValue = .wrapped(optionalValue)
+                    self._requiredValue = .wrapped(requiredValue)
+                }
+                public static let typeValue = #LexiconDefID("com.example.foo")
+            }
+            """
+        )
     }
 
     func testObjectSyntax() throws {
@@ -159,7 +192,7 @@ final class GeneratorBuildersTests: XCTestCase {
                     "Protocol1",
                     "Protocol2"
                 ],
-                LexiconObjectSchema(
+                object: LexiconObjectSchema(
                     properties: [
                         "foo": .boolean,
                         "bar": .integer,
