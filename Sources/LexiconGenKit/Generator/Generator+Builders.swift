@@ -73,6 +73,97 @@ public extension Generator {
                 )
             }
 
+        case .query(let method),
+            .procedure(let method):
+            try StructDeclSyntax("struct \(raw: definition.name): XRPCRequest") {
+                // Parameters
+                if let parameters = method.parameters {
+                    try objectSyntax(
+                        name: "Parameters",
+                        inheritances: ["XRPCRequestParametersConvertible"],
+                        object: parameters
+                    ) {
+                        let params = parameters.properties
+                            .sorted { $0.key < $1.key }
+                            .compactMap { k, v -> String? in
+                                guard Generator.swiftTypeName(for: v) != nil else {
+                                    return nil
+                                }
+
+                                return "parameters.append(contentsOf: \(k).toQueryItems(name: \"\(k)\"))"
+                            }
+
+                        try VariableDeclSyntax(
+                            """
+                            public var queryItems: [URLQueryItem] {
+                                var parameters = [URLQueryItem]()
+                                \(raw: params.joined(separator: "\n"))
+
+                                return parameters
+                            }
+                            """
+                        )
+                    }
+                }
+
+                // Input
+                switch method.input {
+                case .object(let object):
+                    try objectSyntax(
+                        name: "Input",
+                        inheritances: ["Encodable"],
+                        object: object
+                    )
+
+                default:
+                    Generator.emptySyntax()
+                }
+
+                // Output
+                switch method.output {
+                case .object(let object):
+                    try objectSyntax(
+                        name: "Output",
+                        inheritances: ["Decodable", "Hashable"],
+                        object: object
+                    )
+
+                case .ref(let ref):
+                    if let type = Generator.swiftTypeName(for: .ref(ref)) {
+                        try TypeAliasDeclSyntax("public typealias Output = \(raw: type)")
+                    }
+
+                default:
+                    Generator.emptySyntax()
+                }
+
+                // Initializer
+                Generator.requestInitializerSyntax(
+                    parameters: method.parameters,
+                    input: method.input
+                )
+
+                let requestType = definition.object.isQuery ? "query" : "procedure"
+                try VariableDeclSyntax(
+                    "public let type = XRPCRequestType.\(raw: requestType)"
+                )
+
+                try VariableDeclSyntax(
+                    "public let requestIdentifier = \"\(raw: definition.id.nsid)\""
+                )
+
+                if method.parameters != nil {
+                    try VariableDeclSyntax(
+                        "public let parameters: Parameters"
+                    )
+                }
+                if method.input != nil {
+                    try VariableDeclSyntax(
+                        "public let input: Input?"
+                    )
+                }
+            }
+
         default:
             Generator.emptySyntax()
         }
@@ -214,6 +305,34 @@ private extension Generator {
                 signatures.append("\(k): \(t)\(isRequired ? "" : " = nil")")
                 assignments.append("self._\(k) = .wrapped(\(k))")
             }
+        }
+
+        return DeclSyntax(
+            """
+            public init(
+                \(raw: signatures.joined(separator: ",\n"))
+            ) {
+                \(raw: assignments.joined(separator: "\n"))
+            }
+            """
+        )
+    }
+
+    static func requestInitializerSyntax(
+        parameters: LexiconObjectSchema<LexiconAbsoluteReference>?,
+        input: LexiconSchema<LexiconAbsoluteReference>?
+    ) -> DeclSyntax {
+        var signatures = [String]()
+        var assignments = [String]()
+
+        if parameters != nil {
+            signatures.append("parameters: Parameters")
+            assignments.append("self.parameters = parameters")
+        }
+
+        if input != nil {
+            signatures.append("input: Input")
+            assignments.append("self.input = input")
         }
 
         return DeclSyntax(

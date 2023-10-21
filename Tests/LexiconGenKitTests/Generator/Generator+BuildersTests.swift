@@ -232,6 +232,149 @@ final class GeneratorBuildersTests: XCTestCase {
             }
             """
         )
+
+        // query
+        XCTAssertNoDifference(
+            try Generator.definition(
+                makeDefinition(
+                    .query(
+                        LexiconMethodSchema(
+                            parameters: LexiconObjectSchema(
+                                properties: [
+                                    "optionalParam": .string(format: nil),
+                                    "requiredParam": .integer,
+                                ],
+                                required: ["requiredParam"]
+                            ),
+                            input: nil,
+                            output: .object(
+                                LexiconObjectSchema(
+                                    properties: [
+                                        "optionalValue": .string(format: nil),
+                                        "requiredValue": .integer,
+                                    ],
+                                    required: ["requiredValue"]
+                                )
+                            )
+                        )
+                    )
+                )
+            ).formatted().description,
+            """
+            struct Foo: XRPCRequest {
+                public struct Parameters: XRPCRequestParametersConvertible {
+                    @Indirect
+                    public var optionalParam: String?
+                    @Indirect
+                    public var requiredParam: Int
+                    public init(
+                        optionalParam: String? = nil,
+                        requiredParam: Int
+                    ) {
+                        self._optionalParam = .wrapped(optionalParam)
+                        self._requiredParam = .wrapped(requiredParam)
+                    }
+                    public var queryItems: [URLQueryItem] {
+                        var parameters = [URLQueryItem] ()
+                        parameters.append(contentsOf: optionalParam.toQueryItems(name: "optionalParam"))
+                        parameters.append(contentsOf: requiredParam.toQueryItems(name: "requiredParam"))
+
+                        return parameters
+                    }
+                }
+                public struct Output: Decodable, Hashable {
+                    @Indirect
+                    public var optionalValue: String?
+                    @Indirect
+                    public var requiredValue: Int
+                    public init(
+                        optionalValue: String? = nil,
+                        requiredValue: Int
+                    ) {
+                        self._optionalValue = .wrapped(optionalValue)
+                        self._requiredValue = .wrapped(requiredValue)
+                    }
+                }
+                public init(
+                    parameters: Parameters
+                ) {
+                    self.parameters = parameters
+                }
+                public let type = XRPCRequestType.query
+                public let requestIdentifier = "com.example.foo"
+                public let parameters: Parameters
+            }
+            """
+        )
+
+        // procedure
+        XCTAssertNoDifference(
+            try Generator.definition(
+                makeDefinition(
+                    .procedure(
+                        LexiconMethodSchema(
+                            parameters: nil,
+                            input: .object(
+                                LexiconObjectSchema(
+                                    properties: [
+                                        "optionalInput": .string(format: nil),
+                                        "requiredInput": .integer,
+                                    ],
+                                    required: ["requiredInput"]
+                                )
+                            ),
+                            output: .object(
+                                LexiconObjectSchema(
+                                    properties: [
+                                        "optionalValue": .string(format: nil),
+                                        "requiredValue": .integer,
+                                    ],
+                                    required: ["requiredValue"]
+                                )
+                            )
+                        )
+                    )
+                )
+            ).formatted().description,
+            """
+            struct Foo: XRPCRequest {
+                public struct Input: Encodable {
+                    @Indirect
+                    public var optionalInput: String?
+                    @Indirect
+                    public var requiredInput: Int
+                    public init(
+                        optionalInput: String? = nil,
+                        requiredInput: Int
+                    ) {
+                        self._optionalInput = .wrapped(optionalInput)
+                        self._requiredInput = .wrapped(requiredInput)
+                    }
+                }
+                public struct Output: Decodable, Hashable {
+                    @Indirect
+                    public var optionalValue: String?
+                    @Indirect
+                    public var requiredValue: Int
+                    public init(
+                        optionalValue: String? = nil,
+                        requiredValue: Int
+                    ) {
+                        self._optionalValue = .wrapped(optionalValue)
+                        self._requiredValue = .wrapped(requiredValue)
+                    }
+                }
+                public init(
+                    input: Input
+                ) {
+                    self.input = input
+                }
+                public let type = XRPCRequestType.procedure
+                public let requestIdentifier = "com.example.foo"
+                public let input: Input?
+            }
+            """
+        )
     }
 
     func testObjectSyntax() throws {
