@@ -49,6 +49,9 @@ public extension Generator {
     @MemberBlockItemListBuilder
     static func definition(_ definition: SwiftDefinition<LexiconSchema<LexiconAbsoluteReference>>) throws -> MemberBlockItemListSyntax {
         switch definition.object {
+        case .null:
+            Generator.emptySyntax()
+
         case .boolean:
             try TypeAliasDeclSyntax("typealias \(raw: definition.name) = Bool")
 
@@ -58,7 +61,46 @@ public extension Generator {
         case .string:
             try TypeAliasDeclSyntax("typealias \(raw: definition.name) = String")
 
-        default:
+        case .bytes:
+            Generator.emptySyntax()
+
+        case .cidLink:
+            Generator.emptySyntax()
+
+        case .blob:
+            Generator.emptySyntax()
+
+        case .array:
+            Generator.emptySyntax()
+
+        case .object:
+            Generator.emptySyntax()
+
+        case .params:
+            Generator.emptySyntax()
+
+        case .token:
+            Generator.emptySyntax()
+
+        case .ref:
+            Generator.emptySyntax()
+
+        case .union:
+            Generator.emptySyntax()
+
+        case .unknown:
+            Generator.emptySyntax()
+
+        case .record:
+            Generator.emptySyntax()
+
+        case .query:
+            Generator.emptySyntax()
+
+        case .procedure:
+            Generator.emptySyntax()
+
+        case .subscription:
             Generator.emptySyntax()
         }
     }
