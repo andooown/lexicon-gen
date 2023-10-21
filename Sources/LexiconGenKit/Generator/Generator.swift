@@ -2,9 +2,9 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 
 public struct Generator {
-    private let context: GenerateContext
+    private let context: GeneratorContext
 
-    public init(context: GenerateContext) {
+    public init(context: GeneratorContext) {
         self.context = context
     }
 

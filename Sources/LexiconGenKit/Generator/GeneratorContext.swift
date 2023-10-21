@@ -110,7 +110,7 @@ public struct SwiftDefinition<Object> {
     }
 }
 
-public class GenerateContext {
+public class GeneratorContext {
     private let docs = LexiconDocumentCollection<LexiconAbsoluteReference>()
 
     public init() {}

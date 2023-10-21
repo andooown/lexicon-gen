@@ -19,7 +19,7 @@ struct LexiconGen: ParsableCommand {
 
         print("\(fileURLs.count) files found")
 
-        let context = GenerateContext()
+        let context = GeneratorContext()
         let decoder = JSONDecoder()
         for fileURL in fileURLs {
             let data = try Data(contentsOf: fileURL)
