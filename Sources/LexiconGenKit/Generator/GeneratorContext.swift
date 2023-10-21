@@ -73,36 +73,53 @@ class NamespaceNode: Equatable {
     }
 }
 
-struct SwiftNamespaceDefinition {
-    let parent: String
-    let name: String
+public struct SwiftNamespaceDefinition {
+    public let parent: String
+    public let name: String
 
-    var fullName: String {
+    public init(parent: String, name: String) {
+        self.parent = parent
+        self.name = name
+    }
+
+    public var fullName: String {
         parent + "." + name
     }
 }
 
-struct SwiftDefinition<Object> {
-    let id: LexiconDefinitionID
-    let parent: String
-    let name: String
-    let object: Object
+public struct SwiftDefinition<Object> {
+    public let id: LexiconDefinitionID
+    public let parent: String
+    public let name: String
+    public let object: Object
 
-    var fullName: String {
+    public init(
+        id: LexiconDefinitionID,
+        parent: String,
+        name: String,
+        object: Object
+    ) {
+        self.id = id
+        self.parent = parent
+        self.name = name
+        self.object = object
+    }
+
+    public var fullName: String {
         parent + "." + name
     }
 }
 
-class GenerateContext {
+public class GeneratorContext {
     private let docs = LexiconDocumentCollection<LexiconAbsoluteReference>()
 
-    init() {}
+    public init() {}
 
-    func append(_ doc: LexiconDocument<LexiconAbsoluteReference>) {
+    public func append(_ doc: LexiconDocument<LexiconAbsoluteReference>) {
         docs.add(doc)
     }
 
-    func generateNamespaceDefinitions() -> [SwiftNamespaceDefinition] {
+    public func generateNamespaceDefinitions() -> [SwiftNamespaceDefinition] {
         let defs = generateDefinitions()
 
         let rootNode = NamespaceNode.root
@@ -123,7 +140,7 @@ class GenerateContext {
             }
     }
 
-    func generateDefinitions() -> [SwiftDefinition<LexiconSchema<LexiconAbsoluteReference>>] {
+    public func generateDefinitions() -> [SwiftDefinition<LexiconSchema<LexiconAbsoluteReference>>] {
         docs.generateDefinitions()
             .sorted { $0.key.value < $1.key.value }
             .map { key, value in
@@ -143,7 +160,7 @@ class GenerateContext {
     }
 }
 
-internal extension LexiconDefinitionID {
+public extension LexiconDefinitionID {
     var swiftDefinitionNames: (parent: String, name: String) {
         var namespaceComponents = nsid.segments.map(\.headUppercased)
         if isMain {
@@ -156,11 +173,5 @@ internal extension LexiconDefinitionID {
             namespaceComponents.joined(separator: "."),
             name.headUppercased
         )
-    }
-}
-
-private extension String {
-    var headUppercased: String {
-        prefix(1).uppercased() + dropFirst()
     }
 }

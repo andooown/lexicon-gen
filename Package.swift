@@ -16,6 +16,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-syntax.git", revision: "509.0.0"),
+        .package(url: "https://github.com/pointfreeco/swift-custom-dump.git", from: "1.0.0"),
     ],
     targets: [
         .executableTarget(
@@ -23,16 +24,19 @@ let package = Package(
             dependencies: [
                 .target(name: "LexiconGenKit"),
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
-                .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
             ]
         ),
         .target(
-            name: "LexiconGenKit"
+            name: "LexiconGenKit",
+            dependencies: [
+                .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
+            ]
         ),
         .testTarget(
-            name: "LexiconGenTests",
+            name: "LexiconGenKitTests",
             dependencies: [
-                .target(name: "LexiconGenKit")
+                .target(name: "LexiconGenKit"),
+                .product(name: "CustomDump", package: "swift-custom-dump")
             ]
         ),
     ]
