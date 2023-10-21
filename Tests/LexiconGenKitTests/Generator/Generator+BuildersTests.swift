@@ -375,6 +375,15 @@ final class GeneratorBuildersTests: XCTestCase {
             }
             """
         )
+
+        // subscription
+        XCTAssertNoDifference(
+            try Generator.definition(makeDefinition(.subscription)).formatted().description,
+            """
+            enum Foo {
+            }
+            """
+        )
     }
 
     func testObjectSyntax() throws {

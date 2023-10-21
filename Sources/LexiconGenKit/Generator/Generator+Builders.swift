@@ -164,6 +164,9 @@ public extension Generator {
                 }
             }
 
+        case .subscription:
+            try EnumDeclSyntax("enum \(raw: definition.name)") {}
+
         default:
             Generator.emptySyntax()
         }
