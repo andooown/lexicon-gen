@@ -10,6 +10,7 @@ public struct Generator {
 
     public func generate() throws -> String {
         let namespaces = context.generateNamespaceDefinitions()
+        let definitions = context.generateDefinitions()
 
         let source = try SourceFileSyntax {
             try ImportDeclSyntax("import ATProtoCore")
@@ -18,6 +19,8 @@ public struct Generator {
             try ImportDeclSyntax("import Foundation")
 
             try Generator.namespaces(namespaces)
+
+            try Generator.unknownUnion(from: definitions)
         }
 
         let syntax = source.formatted()

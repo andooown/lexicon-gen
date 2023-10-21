@@ -14,4 +14,35 @@ public extension Generator {
             }
         }
     }
+
+    @CodeBlockItemListBuilder
+    static func unknownUnion(from definitions: [SwiftDefinition<LexiconSchema<LexiconAbsoluteReference>>]) throws -> CodeBlockItemListSyntax {
+        let records = definitions.filter(\.object.isRecord)
+
+        // public typealias LexiconUnknownUnion = Union2<App.Bsky.Foo.RecordA, App.Bsky.Foo.RecordB>
+        try TypeAliasDeclSyntax(
+            "public typealias LexiconUnknownUnion = Union\(raw: records.count)<\(raw: records.map(\.fullName).joined(separator: ", "))>"
+        )
+
+        // public extension LexiconUnknownUnion {
+        //     var asRecordA: App.Bsky.Foo.RecordA? {
+        //         asType0
+        //     }
+        //     var asRecordB: App.Bsky.Foo.RecordB? {
+        //         asType1
+        //     }
+        // }
+        try ExtensionDeclSyntax("public extension LexiconUnknownUnion") {
+            let uniqued = Builder.uniqued(records.map(\.fullName))
+            for (i, (record, unique)) in zip(records, uniqued).enumerated() {
+                try VariableDeclSyntax(
+                    """
+                    var as\(raw: unique): \(raw: record.fullName)? {
+                        asType\(raw: i)
+                    }
+                    """
+                )
+            }
+        }
+    }
 }
